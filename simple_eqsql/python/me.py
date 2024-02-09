@@ -24,7 +24,7 @@ def run(exp_id: str, params: Dict):
         # if not, then exit with a warning.
         if not task_queue.are_queues_empty():
             print("WARNING: db input / output queues are not empty. Aborting run", flush=True)
-            task_queue.clear_queues()
+            # task_queue.clear_queues()
             return
 
         # start worker pool
