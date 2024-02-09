@@ -101,7 +101,7 @@ USER_VARS=()
 log_script
 # echo's anything following this to standard out
 set -x
-SWIFT_FILE=eqsql_workflow.swift
+SWIFT_FILE=eqsql_worker_pool.swift
 swift-t -n $PROCS $MACHINE -p -I $EQSQL -r $EQSQL \
     -I $EMEWS_EXT -r $EMEWS_EXT \
     -e TURBINE_MPI_THREAD \

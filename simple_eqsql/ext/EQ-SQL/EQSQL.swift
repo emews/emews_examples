@@ -1,8 +1,3 @@
-
-/*
-   EMEWS EQ.swift for SQL
-*/
-
 import location;
 pragma worktypedef resident_work;
 
@@ -27,7 +22,7 @@ except ValueError as e:
 try:
     query_timeout = float(os.environ.get('EQ_QUERY_TASK_TIMEOUT', 120.0))
 except ValueError as e:
-    print("ENV VAR: EQ_DB_RETRY_THRESHOLD must be a float")
+    print("ENV VAR: EQ_QUERY_TASK_TIMEOUT must be a float")
     raise e
 
 result_str = eqsql_swift.query_task(eq_work_type, worker_pool=worker_pool_id, query_timeout=query_timeout, retry_threshold=retry_threshold)
@@ -74,6 +69,8 @@ eqsql_swift.report_task(eq_task_id, eq_type, payload, retry_threshold=retry_thre
 (void v) _void_py(string code, string expr="\"\"") "turbine" "0.1.0"
     [ "turbine::python 1 1 <<code>> <<expr>> "];
 
+
+// TODO: Update repo version with timeout
 @dispatch=resident_work
 (string output) _string_py(string code, string expr) "turbine" "0.1.0"
     [ "set <<output>> [ turbine::python 1 1 <<code>> <<expr>> ]" ];
@@ -88,13 +85,18 @@ except ValueError as e:
     print("ENV VAR: EQ_DB_RETRY_THRESHOLD must be an integer")
     raise e
 
-eqsql_swift.init_task_querier('%s', %d, %d, %d, retry_threshold)
+try:
+    query_timeout = float(os.environ.get('EQ_QUERY_TASK_TIMEOUT', 120.0))
+except ValueError as e:
+    print("ENV VAR: EQ_QUERY_TASK_TIMEOUT must be a float")
+    raise e
+
+eqsql_swift.init_task_querier('%s', %d, %d, %d, query_timeout, retry_threshold)
 """;
 
 (void v) eq_init_batch_querier(location loc, string worker_pool, int batch_size, int threshold, int work_type) {
-    //printf("EQPy_init_package(%s) ...", packageName);
-    string code = init_querier_string % (worker_pool, batch_size, threshold, work_type); //,packageName);
-    //printf("Code is: \n%s", code);
+    string code = init_querier_string % (worker_pool, batch_size, threshold, work_type);
+    // printf("Code is: \n%s", code);
     @location=loc _void_py(code) => v = propagate();
 }
 
@@ -107,7 +109,7 @@ eqsql_swift.init_task_querier('%s', %d, %d, %d, retry_threshold)
 string get_string = "result = eqsql_swift.get_tasks_n()";
 
 (message msgs[]) eq_batch_task_query(location loc) {
-    //printf("EQPy_get called");
+    //printf("eq_batch_task_query called");
     //printf("Code is: \n%s", code);
     result = @location=loc _string_py(get_string, "result");
     string msg_strs[] = split(result, ";");
